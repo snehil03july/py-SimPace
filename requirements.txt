@@ -1,0 +1,6 @@
+numpy
+scipy
+nibabel
+pydicom
+matplotlib
+opencv-python
