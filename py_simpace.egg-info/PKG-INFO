@@ -1,0 +1,22 @@
+Metadata-Version: 2.2
+Name: py-simpace
+Version: 0.1.0
+Summary: A Python equivalent of SimPACE for simulating MRI motion artifacts.
+Home-page: https://github.com/snehil03july/py-simpace
+Author: Snehil
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: nibabel
+Requires-Dist: pydicom
+Requires-Dist: matplotlib
+Requires-Dist: opencv-python
+Dynamic: author
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: license
+Dynamic: requires-dist
+Dynamic: summary
