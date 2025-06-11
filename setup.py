@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="py-simpace",
-    version="2.0.0",
+    version="2.0.1",
     author="Snehil Kumar",
     author_email="sk895@exeter.ac.uk",
     description="Realistic MRI motion artifact simulation toolkit for structural MRI and fMRI, with deep learning integration.",
