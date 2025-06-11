@@ -4,7 +4,7 @@ import sys
 import os
 
 # Optional: so that you can run without installing
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pysimpace.ml import generate_training_pairs, MRIPairedDataset
 

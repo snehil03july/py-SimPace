@@ -1,6 +1,6 @@
 # PySimPace
 
-**PySimPace v2.0**  
+**PySimPace v2.0.1**  
 **Realistic MRI Motion Artifact Simulation Toolkit**  
 *(Structural MRI & fMRI Support, Deep Learning Integration Ready)*
 
@@ -26,7 +26,24 @@ It is designed to:
 
 ---
 
-## What's New in v2.0
+
+### PySimPace ML Pipeline Architecture
+
+![PySimPace ML Pipeline](./pysimpace_architecture.png)
+
+The architecture of the PySimPace ML pipeline is as follows:
+
+- Clean MRI images are loaded.
+- For each sample, a new random motion + artifact configuration is generated.
+- The motion simulator applies image-space or k-space blended motion.
+- Artifacts are applied (ghosting, Gibbs, physio noise).
+- The clean-corrupted pairs are saved.
+- The resulting dataset is loaded via MRIPairedDataset into PyTorch training pipelines.
+
+This architecture allows generating large-scale, highly diverse training data for motion correction deep learning models.
+
+
+## What's New in v2.0.1
 
 ✅ Modular architecture (TensorFlow-style)  
 ✅ Image-space motion simulation (slice-wise)  
@@ -38,7 +55,6 @@ It is designed to:
 ✅ Full tutorials in Jupyter format  
 ✅ Unit test scaffolding (`tests/`)  
 ✅ CLI planned  
-✅ Ready for ACM paper & PyPI release
 
 ---
 
@@ -76,7 +92,7 @@ pip install -e .
 ### From PyPI (coming soon)
 
 ```bash
-pip install pysimpace
+pip install py-simpace
 ```
 
 ---
@@ -234,9 +250,7 @@ pytest tests/
 
 Test coverage:
 
-- `test_structural.py`
-- `test_functional.py`
-- `test_noise.py`
+- `test_pipeline.py`
 - `test_ml.py`
 
 ---
@@ -278,6 +292,26 @@ generate_physio_noise(...)
 generate_training_pairs(...)
 MRIPairedDataset(...)
 ```
+
+---
+
+### Controlling Artifacts
+
+The following artifacts can be enabled and controlled in PySimPace:
+
+- **Ghosting (Structural MRI)**:
+    - Enable: `ghosting=True`
+    - Current version uses default strength (configurable in future versions)
+
+- **Gibbs ringing (Structural MRI)**:
+    - Enable: `apply_gibbs=True`
+    - Control strength: `gibbs_strength` parameter (float, e.g., 0.01 to 0.1)
+
+- **Physiological noise (fMRI)**:
+    - Enable: `physio=True`
+    - Current version uses default physio noise model (configurable in future versions)
+
+Each sample generated in `generate_training_pairs` will apply these artifacts according to the selected parameters, allowing you to generate highly diverse motion + artifact scenarios for training robust deep learning models.
 
 ---
 
