@@ -1,0 +1,11 @@
+numpy>=1.21
+scipy>=1.7
+matplotlib>=3.5
+nibabel>=3.2
+torch>=1.10
+tqdm>=4.62
+scikit-image>=0.19
+
+[dev]
+pytest>=6.2
+torchio>=0.18

@@ -4,27 +4,42 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name='py-simpace',
-    version='0.1.1',
-    packages=find_packages(),
-    install_requires=[
-        'numpy',
-        'scipy',
-        'nibabel',
-        'pydicom',
-        'matplotlib',
-        'opencv-python'
-    ],
-    author='Snehil',
-    description='A Python equivalent of SimPACE for simulating MRI motion artifacts.',
+    name="py-simpace",
+    version="2.0.0",
+    author="Snehil Kumar",
+    author_email="sk895@exeter.ac.uk",
+    description="Realistic MRI motion artifact simulation toolkit for structural MRI and fMRI, with deep learning integration.",
     long_description=long_description,
-    long_description_content_type="text/markdown",  # Ensure markdown format is used
-    license='MIT',
-    url='https://github.com/snehil03july/py-simpace',
+    long_description_content_type="text/markdown",
+    url="https://github.com/snehil03july/py-SimPace",
+    project_urls={
+        "Bug Tracker": "https://github.com/snehil03july/py-SimPace/issues",
+        "Documentation": "https://github.com/snehil03july/py-SimPace#readme",
+    },
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Healthcare Industry",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Topic :: Scientific/Engineering :: Image Processing",
+        "Topic :: Scientific/Engineering :: Medical Science Apps.",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
-    python_requires='>=3.6',
+    packages=find_packages(),
+    python_requires=">=3.7",
+    install_requires=[
+        "numpy>=1.21",
+        "scipy>=1.7",
+        "matplotlib>=3.5",
+        "nibabel>=3.2",
+        "torch>=1.10",
+        "tqdm>=4.62",
+        "scikit-image>=0.19",
+    ],
+    extras_require={
+        "dev": ["pytest>=6.2", "torchio>=0.18"]
+    },
+    include_package_data=True,
+    zip_safe=False,
 )

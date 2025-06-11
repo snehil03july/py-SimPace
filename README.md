@@ -1,88 +1,326 @@
-# py-simPace
+# PySimPace
+
+**PySimPace v2.0**  
+**Realistic MRI Motion Artifact Simulation Toolkit**  
+*(Structural MRI & fMRI Support, Deep Learning Integration Ready)*
+
+Author: Snehil Kumar  
+Contact: sk895@exeter.ac.uk  
+License: MIT License
+
+---
 
 ## Overview
-**py-simPace** (Simulated Prospective Acquisition CorrEction) is an open-source Python library designed to simulate motion artifacts in MRI data. Inspired by MATLAB's SimPACE, this package allows researchers to introduce controlled motion distortions at the slice acquisition level, study the impact of motion on MRI scans, and evaluate motion correction techniques.
 
-This project is part of **Snehil's PhD research** on MRI motion correction at the **University of Exeter**, contributing to the development of tools for understanding and mitigating motion-induced errors in functional MRI (fMRI) and structural MRI.
+PySimPace is an open-source Python library for simulating realistic **motion artifacts** and **image artifacts** in MRI data, including both **structural MRI (3D)** and **fMRI (4D)**.
 
-## Features
-- 🏃 **Motion Simulation**: Introduce controlled motion artifacts (translations, rotations) at the slice level.
-- 📂 **MRI Data Handling**: Load and process standard MRI file formats (NIfTI, DICOM).
-- 🔍 **Artifact Analysis**: Compare original vs. motion-corrupted MRI data.
-- 🛠 **Motion Correction Interface**: Provides a framework to integrate and evaluate correction algorithms.
-- 📊 **Visualization Tools**: Generate motion heatmaps, k-space representations, and comparative analysis.
-- 🧩 **Extensible API**: Designed for researchers to easily incorporate motion effects into their studies.
+It is designed to:
+
+✅ Provide realistic motion simulation for training deep learning models  
+✅ Support both structural MRI and fMRI pipelines  
+✅ Support realistic artifact generation (ghosting, Gibbs ringing, physiological noise)  
+✅ Provide a simple API + CLI + tutorials  
+✅ Provide paired datasets for supervised training of motion correction models  
+✅ Be fast and scalable (supports parallelism)  
+✅ Be fully open and extensible
+
+---
+
+## What's New in v2.0
+
+✅ Modular architecture (TensorFlow-style)  
+✅ Image-space motion simulation (slice-wise)  
+✅ Blended k-space motion simulation (realistic, new contribution)  
+✅ Ghosting artifact simulation  
+✅ Gibbs ringing artifact simulation  
+✅ Full fMRI motion simulation with intra-volume motion + physiological noise  
+✅ ML integration (`ml.py`) → generate training pairs → ready for PyTorch  
+✅ Full tutorials in Jupyter format  
+✅ Unit test scaffolding (`tests/`)  
+✅ CLI planned  
+✅ Ready for ACM paper & PyPI release
+
+---
+
+## Motion & Artifact Support (v2.0)
+
+### Motion types supported:
+- Image-space motion (slice-wise motion blocks)
+- K-space motion:
+  - Basic k-space motion (combination method)
+  - Blended k-space motion (realistic smooth motion) ✅ main contribution
+
+### Artifact types supported:
+- Ghosting (phase-encoding ghosting, in blended k-space motion)
+- Gibbs ringing
+- Physiological noise (fMRI only)
+
+### Planned for v2.1:
+- Spike noise
+- Intensity drift
+- Susceptibility distortions
+- Partial Fourier artifacts
+
+---
 
 ## Installation
-### Install from PyPI
-You can install `py-simPace` directly from **PyPI**:
+
+### Local installation
+
 ```bash
-pip install py-simpace
+git clone https://github.com/snehil03july/py-SimPace.git
+cd py-SimPace
+pip install -e .
 ```
 
-### Install from Source
-Alternatively, you can clone the repository and install manually:
+### From PyPI (coming soon)
+
 ```bash
-git clone https://github.com/snehil-xyz/py-simpace.git
-cd py-simpace
-pip install -r requirements.txt
+pip install pysimpace
 ```
 
-## Dependencies
-`py-simPace` requires the following Python libraries:
-- `numpy`
-- `scipy`
-- `nibabel`
-- `pydicom`
-- `matplotlib`
-- `opencv-python`
+---
 
-These dependencies are automatically installed when using `pip install py-simpace`.
+## Project Structure
 
-## Usage Guide
-### 1️⃣ Load MRI Data
+```
+pysimpace/
+├── __init__.py
+├── simulation/
+│   ├── structural.py
+│   ├── functional.py
+│   ├── transforms.py
+│   ├── noise.py
+│   ├── models.py
+├── io.py
+├── analysis.py
+├── ml.py
+├── cli.py
+├── gui.py
+├── utils.py
+docs/
+examples/
+├── structural_simulation_tutorial.ipynb
+├── fmri_simulation_tutorial.ipynb
+├── ml_integration_tutorial.ipynb
+tests/
+setup.py / pyproject.toml
+requirements.txt
+README.md
+LICENSE
+```
+
+---
+
+## Quick Usage
+
+### Structural MRI motion simulation
+
 ```python
-from py_simpace.mri_loader import MRILoader
-mri_data = MRILoader.load_nifti("sample.nii.gz")
+from pysimpace.io import load_nifti, save_nifti
+from pysimpace.simulation.structural import simulate_structural_motion
+from pysimpace.simulation.models import generate_random_affine_transforms
+
+# Load clean MRI
+clean_data, affine, header = load_nifti("clean_image.nii.gz")
+
+# Generate random transforms
+transforms = generate_random_affine_transforms(5, 5.0, 5.0, clean_data.shape)
+
+# Simulate motion
+corrupted_data = simulate_structural_motion(
+    clean_data,
+    transforms=transforms,
+    use_blended=True,
+    ghosting=True,
+    apply_gibbs=True,
+    gibbs_strength=0.05,
+    seed=42
+)
+
+# Save corrupted image
+save_nifti(corrupted_data, affine, header, "corrupted_image.nii.gz")
 ```
 
-### 2️⃣ Simulate Motion Artifacts
+---
+
+### fMRI motion simulation
+
 ```python
-from py_simpace.motion_simulation import MotionSimulation
-motion_data = MotionSimulation.apply_motion(mri_data[:, :, 50], rotation=10, translation=(5, 5))
+from pysimpace.io import load_nifti, save_nifti
+from pysimpace.simulation.functional import simulate_fmri_motion
+from pysimpace.simulation.models import MotionTrajectory, generate_smooth_motion_trajectory
+
+# Load clean fMRI
+fmri_data, affine, header = load_nifti("clean_fmri.nii.gz")
+
+# Generate trajectory
+n_vols = fmri_data.shape[-1]
+n_slices = fmri_data.shape[2]
+trajectory = MotionTrajectory(n_volumes=n_vols, n_slices=n_slices)
+
+vol_transforms = generate_smooth_motion_trajectory(
+    n_volumes=n_vols, target_fd_mm=0.5, vol_shape=fmri_data.shape[:3], smoothing_sigma=3.0, seed=42
+)
+
+for t in range(n_vols):
+    trajectory.set_volume_transform(t, vol_transforms[t])
+
+# Simulate motion
+corrupted_fmri = simulate_fmri_motion(
+    fmri_data,
+    trajectory,
+    intra=True,
+    physio=True,
+    parallel=True,
+    seed=42
+)
+
+# Save corrupted fMRI
+save_nifti(corrupted_fmri, affine, header, "corrupted_fmri.nii.gz")
 ```
 
-### 3️⃣ Analyze Motion Effects
+---
+
+## ML Integration
+
+### Generate paired training data
+
 ```python
-from py_simpace.artifact_analysis import ArtifactAnalysis
-ArtifactAnalysis.compare_images(mri_data[:, :, 50], motion_data)
+from pysimpace.ml import generate_training_pairs
+
+generate_training_pairs(
+    clean_dir="examples/clean",
+    output_dir="examples/training_pairs",
+    n_samples=50,
+    artifact_configs=None,
+    structural=True,
+    use_blended=True,
+    save_format='nifti',
+    seed=42
+)
 ```
 
-## PyPI Deployment & Updates
-**py-simPace** is deployed on **PyPI**, and you can always update it using:
-```bash
-pip install --upgrade py-simpace
+### Load paired dataset in PyTorch
+
+```python
+from pysimpace.ml import MRIPairedDataset
+
+dataset = MRIPairedDataset("examples/training_pairs/pairs.csv")
+clean_img, corrupted_img = dataset[0]
+
+# Example shape: (1, X, Y, Z)
 ```
 
-For package details, visit: [https://pypi.org/project/py-simpace/](https://pypi.org/project/py-simpace/)
+---
 
-## Contribution Guidelines
-Contributions are welcome! Follow these steps:
-1. **Fork the repository** on GitHub.
-2. **Create a new branch** (`feature-branch`).
-3. **Commit your changes** and push the branch.
-4. **Submit a pull request**.
+## Tutorials
 
-### Running Unit Tests
+👉 Full examples provided in `examples/`:
+
+✅ `structural_simulation_tutorial.ipynb`  
+✅ `fmri_simulation_tutorial.ipynb`  
+✅ `ml_integration_tutorial.ipynb`
+
+---
+
+## Tests
+
+Unit tests provided in `tests/`:
+
 ```bash
 pytest tests/
 ```
 
+Test coverage:
+
+- `test_structural.py`
+- `test_functional.py`
+- `test_noise.py`
+- `test_ml.py`
+
+---
+
+## API Documentation
+
+### pysimpace.simulation.structural
+
+```python
+simulate_structural_motion(...)
+```
+
+### pysimpace.simulation.functional
+
+```python
+simulate_fmri_motion(...)
+```
+
+### pysimpace.simulation.models
+
+```python
+generate_random_affine_transforms(...)
+generate_smooth_motion_trajectory(...)
+MotionTrajectory(...)
+```
+
+### pysimpace.simulation.noise
+
+```python
+apply_gibbs_ringing(...)
+apply_spike_noise(...)  # Coming soon
+apply_intensity_drift(...)  # Coming soon
+generate_physio_noise(...)
+```
+
+### pysimpace.ml
+
+```python
+generate_training_pairs(...)
+MRIPairedDataset(...)
+```
+
+---
+
+## Contributing
+
+Contributions welcome!
+
+To contribute:
+
+1. Fork the repo
+2. Clone your fork
+3. Create a new branch
+4. Implement your feature or bug fix
+5. Add unit tests in `tests/`
+6. Ensure all tests pass (`pytest tests/`)
+7. Submit a pull request
+
+Please follow PEP8 + black formatting.
+
+---
+
+## Contact
+
+Maintainer: **Snehil Kumar**  
+Email: [sk895@exeter.ac.uk](mailto:sk895@exeter.ac.uk)
+
+---
+
 ## License
-**MIT License** – Free to use and modify.
 
-## Acknowledgments
-This project is developed as part of **Snehil's PhD research** on MRI motion correction at the **University of Exeter**. It aims to enhance the study of motion artifacts in MRI, aiding researchers in testing and developing correction methods.
+MIT License.
 
-For inquiries, contact **Snehil** via GitHub: [@snehil03july](https://github.com/snehil03july/)
+---
 
+## Citation
+
+If you use this software in your research, please cite:
+
+```text
+Snehil Kumar et al., "PySimPace: Realistic MRI Motion Artifact Simulation Toolkit," 2025.
+(Submitted to ACM conference)
+```
+
+---
+
+Happy simulating! 🚀
