@@ -120,11 +120,67 @@ examples/
 ├── fmri_simulation_tutorial.ipynb
 ├── ml_integration_tutorial.ipynb
 tests/
+Dockerfile
 setup.py / pyproject.toml
 requirements.txt
 README.md
 LICENSE
 ```
+
+## 🚀 Running with Docker
+
+We provide a ready-to-use Docker container for testing and running `py-simpace` without any local installation.
+
+### 🐳 Build the Docker Image
+
+Clone the repository and run:
+
+```bash
+docker build -t pysimpace .
+```
+
+This will:
+
+- Install `py-simpace` in editable mode
+- Include all examples and CLI tools
+- Set up a Python 3.10 environment
+
+---
+
+### ▶️ Run the Container
+
+Launch an interactive shell inside the container:
+
+```bash
+docker run -it pysimpace
+```
+
+Once inside, you can run any example, such as:
+
+```bash
+python examples/demo_motion_simulation.py
+```
+
+---
+
+### 📁 Access Output Files
+
+To save output files (e.g., corrupted NIfTI images) to your local machine, mount a volume:
+
+```bash
+docker run -it -v $(pwd)/outputs:/app/outputs pysimpace
+```
+
+This will write output files to the `outputs/` folder in your local directory.
+
+---
+
+### 📦 Notes
+
+- By default, the container uses CPU. No GPU is required.
+- All required dependencies are pre-installed.
+- For advanced usage (e.g., PyTorch training), use the `MRIPairedDataset` class as described in the documentation.
+
 
 ---
 
